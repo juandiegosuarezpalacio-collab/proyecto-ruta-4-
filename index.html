@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ruta Escolar Montenegro</title>
+  <meta name="description" content="Panel móvil de ruta escolar con GPS, barrios de Montenegro y mensajes automáticos." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Ruta escolar móvil</p>
+        <h1>Montenegro, Quindío</h1>
+      </div>
+      <div class="status-stack">
+        <span class="chip" id="gpsBadge">GPS apagado</span>
+        <span class="chip muted" id="sendBadge">Modo demo</span>
+      </div>
+    </header>
+
+    <section class="hero card">
+      <div>
+        <h2 id="estadoRuta">En espera</h2>
+        <p id="ultimaAccion">Activa el GPS y selecciona una ruta para comenzar.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn primary" id="btnIniciar">Iniciar</button>
+        <button class="btn secondary" id="btnGps">GPS</button>
+      </div>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab active" data-panel="operacion">Operación</button>
+      <button class="tab" data-panel="estudiantes">Estudiantes</button>
+      <button class="tab" data-panel="mensajes">Mensajes</button>
+      <button class="tab" data-panel="config">Config</button>
+    </nav>
+
+    <main>
+      <section class="panel active" id="panel-operacion">
+        <article class="card">
+          <div class="grid two">
+            <label class="field">
+              <span>Ruta activa</span>
+              <select id="rutaSelect"></select>
+            </label>
+            <label class="field">
+              <span>Radio de aviso</span>
+              <input id="radioGeneral" type="number" min="50" max="1000" step="10" value="250" />
+            </label>
+            <label class="field">
+              <span>Tono</span>
+              <select id="tonoGeneral">
+                <option value="cercano">Cercano</option>
+                <option value="formal">Formal</option>
+                <option value="breve">Breve</option>
+              </select>
+            </label>
+            <label class="field switch-field">
+              <span>Auto envío</span>
+              <input id="autoSend" type="checkbox" checked />
+            </label>
+          </div>
+          <div class="quick-actions">
+            <button class="btn soft" id="btnSiguiente">Siguiente</button>
+            <button class="btn success" id="btnSubio">Subió</button>
+            <button class="btn warn" id="btnNoSalio">No salió</button>
+            <button class="btn soft" id="btnLlegada">Llegó</button>
+          </div>
+        </article>
+
+        <article class="card focus-card">
+          <div class="row between">
+            <div>
+              <p class="eyebrow">Siguiente estudiante</p>
+              <h3 id="studentName">Sin iniciar</h3>
+            </div>
+            <span class="pill" id="studentState">Pendiente</span>
+          </div>
+          <p id="studentMeta">Selecciona una ruta.</p>
+          <div class="metrics">
+            <div><span>Distancia</span><strong id="distanceText">--</strong></div>
+            <div><span>Acudiente</span><strong id="guardianText">--</strong></div>
+            <div><span>Teléfono</span><strong id="phoneText">--</strong></div>
+            <div><span>Mensajes</span><strong id="messageCount">0</strong></div>
+          </div>
+          <div class="quick-message-box">
+            <label class="field">
+              <span>Mensaje sugerido</span>
+              <textarea id="autoPreview" rows="5"></textarea>
+            </label>
+            <div class="quick-actions">
+              <button class="btn secondary" id="btnMejorarActual">Mejorar texto</button>
+              <button class="btn primary" id="btnEnviarActual">Enviar</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="card map-card">
+          <div class="row between">
+            <div>
+              <p class="eyebrow">Ubicación en vivo</p>
+              <h3>Mapa</h3>
+            </div>
+            <small id="coordsText">Lat -- / Lng --</small>
+          </div>
+          <div id="map"></div>
+        </article>
+      </section>
+
+      <section class="panel" id="panel-estudiantes">
+        <article class="card">
+          <div class="row between">
+            <div>
+              <p class="eyebrow">Registro</p>
+              <h3>Estudiantes y acudientes</h3>
+            </div>
+            <button class="btn soft" id="btnLimpiarForm">Limpiar</button>
+          </div>
+          <form id="studentForm" class="grid two">
+            <input type="hidden" id="studentId" />
+            <label class="field"><span>Estudiante</span><input id="nombre" required type="text" /></label>
+            <label class="field"><span>Acudiente</span><input id="acudiente" required type="text" /></label>
+            <label class="field"><span>Teléfono</span><input id="telefono" required type="tel" /></label>
+            <label class="field"><span>Ruta</span><select id="rutaEstudiante"></select></label>
+            <label class="field"><span>Barrio</span><select id="barrio"></select></label>
+            <label class="field"><span>Dirección</span><input id="direccion" type="text" /></label>
+            <label class="field"><span>Latitud</span><input id="lat" type="number" step="0.000001" /></label>
+            <label class="field"><span>Longitud</span><input id="lng" type="number" step="0.000001" /></label>
+            <label class="field"><span>Radio por estudiante</span><input id="radioAviso" type="number" min="50" max="1000" step="10" value="250" /></label>
+            <label class="field"><span>Tono preferido</span>
+              <select id="tonoEstudiante">
+                <option value="cercano">Cercano</option>
+                <option value="formal">Formal</option>
+                <option value="breve">Breve</option>
+              </select>
+            </label>
+            <label class="field full"><span>Nota personalizada</span><textarea id="nota" rows="3"></textarea></label>
+            <div class="full quick-actions">
+              <button class="btn primary" type="submit">Guardar</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="card">
+          <label class="field search-field"><span>Buscar</span><input id="searchStudent" type="search" placeholder="Nombre, barrio o ruta" /></label>
+          <div id="studentList" class="list"></div>
+        </article>
+      </section>
+
+      <section class="panel" id="panel-mensajes">
+        <article class="card">
+          <div class="grid two">
+            <label class="field"><span>Estudiante</span><select id="msgStudent"></select></label>
+            <label class="field"><span>Tipo</span>
+              <select id="msgType">
+                <option value="cerca">Ruta cerca</option>
+                <option value="retraso">Retraso</option>
+                <option value="subio">Subió</option>
+                <option value="noSalio">No salió</option>
+                <option value="llegada">Llegó al colegio</option>
+                <option value="personalizado">Personalizado</option>
+              </select>
+            </label>
+            <label class="field"><span>Tono</span>
+              <select id="msgTone">
+                <option value="cercano">Cercano</option>
+                <option value="formal">Formal</option>
+                <option value="breve">Breve</option>
+              </select>
+            </label>
+            <label class="field"><span>Modo WhatsApp</span>
+              <select id="waType">
+                <option value="text">Texto normal</option>
+                <option value="interactive">Interactivo con botones</option>
+                <option value="template">Plantilla aprobada</option>
+              </select>
+            </label>
+            <label class="field full"><span>Instrucción extra</span><input id="msgExtra" type="text" placeholder="Ej. decir que faltan 4 minutos" /></label>
+            <label class="field full"><span>Vista previa</span><textarea id="msgPreview" rows="7"></textarea></label>
+          </div>
+          <div class="grid two">
+            <label class="field"><span>Botón 1</span><input id="btn1Text" type="text" value="Voy saliendo" /></label>
+            <label class="field"><span>Botón 2</span><input id="btn2Text" type="text" value="Espérenme 2 min" /></label>
+            <label class="field"><span>Botón 3</span><input id="btn3Text" type="text" value="No sale hoy" /></label>
+            <label class="field"><span>Plantilla Meta</span><input id="templateName" type="text" placeholder="ruta_cerca_montenegro" /></label>
+          </div>
+          <div class="quick-actions">
+            <button class="btn secondary" id="btnBuildMsg">Mejorar</button>
+            <button class="btn soft" id="btnCopyMsg">Copiar</button>
+            <button class="btn primary" id="btnSendMsg">Enviar</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="row between">
+            <div>
+              <p class="eyebrow">Bitácora</p>
+              <h3>Mensajes y eventos</h3>
+            </div>
+            <button class="btn soft" id="btnClearLogs">Limpiar</button>
+          </div>
+          <div id="logList" class="list"></div>
+        </article>
+      </section>
+
+      <section class="panel" id="panel-config">
+        <article class="card">
+          <div class="grid two">
+            <label class="field"><span>Nombre del servicio</span><input id="serviceName" type="text" value="ruta escolar" /></label>
+            <label class="field"><span>Nombre del colegio</span><input id="schoolName" type="text" value="Institución Educativa" /></label>
+            <label class="field"><span>Modo de envío</span>
+              <select id="sendMode">
+                <option value="demo">Demo sin enviar</option>
+                <option value="wa">Abrir WhatsApp</option>
+                <option value="backend">Enviar por backend</option>
+              </select>
+            </label>
+            <label class="field"><span>URL backend</span><input id="backendUrl" type="url" placeholder="https://tu-worker.workers.dev/send" /></label>
+            <label class="field"><span>Clave pública</span><input id="publicKey" type="text" placeholder="clave de acceso" /></label>
+            <label class="field switch-field"><span>Guardar automático</span><input id="autoSave" type="checkbox" checked /></label>
+          </div>
+          <div class="quick-actions">
+            <button class="btn primary" id="btnSaveConfig">Guardar configuración</button>
+            <button class="btn soft" id="btnTestBackend">Probar backend</button>
+          </div>
+          <div class="notice">
+            <strong>Barrios cargados:</strong> <span id="barriosCount">0</span>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="ia.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

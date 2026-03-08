@@ -1,0 +1,50 @@
+[
+  {
+    "id": "est-001",
+    "nombre": "Mateo López",
+    "acudiente": "Ana Gómez",
+    "telefono": "3001234567",
+    "ruta": "Bachillerato",
+    "barrio": "La Isabela",
+    "direccion": "Frente a la tienda de la esquina",
+    "lat": 4.5664,
+    "lng": -75.7479,
+    "nota": "Avisar con tono amable",
+    "estado": "pendiente",
+    "activo": true,
+    "radioAviso": 250,
+    "tono": "cercano"
+  },
+  {
+    "id": "est-002",
+    "nombre": "Sofía Ramírez",
+    "acudiente": "Carlos Ramírez",
+    "telefono": "3015551122",
+    "ruta": "Primaria",
+    "barrio": "Ciudad Alegria",
+    "direccion": "Casa azul frente al parque",
+    "lat": 4.5671,
+    "lng": -75.7491,
+    "nota": "Si hay retraso mencionar 5 minutos",
+    "estado": "pendiente",
+    "activo": true,
+    "radioAviso": 200,
+    "tono": "formal"
+  },
+  {
+    "id": "est-003",
+    "nombre": "Valentina Pérez",
+    "acudiente": "Lina Pérez",
+    "telefono": "3201112233",
+    "ruta": "Transición",
+    "barrio": "Villa Marlen",
+    "direccion": "Portón blanco",
+    "lat": 4.5682,
+    "lng": -75.7484,
+    "nota": "Pedir que salga con tiempo",
+    "estado": "pendiente",
+    "activo": true,
+    "radioAviso": 180,
+    "tono": "breve"
+  }
+]
